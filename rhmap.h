@@ -1,43 +1,41 @@
 #ifndef RHMAP_H
 #define RHMAP_H
 
-#ifndef RHMAP_KEY
-#define RHMAP_KEY unsigned long long int
-#endif
-
 enum {UNUSED, TOMBSTONE};
 
 #define DECLARE_RHMAP(map, type)					\
 struct map {								\
 	struct map##_bucket {						\
-		RHMAP_KEY key;						\
-		int dist;						\
+		size_t key;						\
+		size_t dist;						\
 		type val;						\
 	} *buckets;							\
-	int size;							\
-	int pop;							\
-	int max_dist;							\
+	size_t size;							\
+	size_t pop;							\
+	size_t max_dist;						\
 };									\
 									\
 void map##_init(struct map *m, void *mem, int size);			\
 void map##_clear(struct map *m, void (*dtor)(type));			\
-type *map##_insert(struct map *m, RHMAP_KEY key, type val);		\
-type *map##_remove(struct map *m, RHMAP_KEY key);			\
-type *map##_search(struct map *m, RHMAP_KEY key);			\
+type *map##_insert(struct map *m, size_t key, type val);		\
+type *map##_remove(struct map *m, size_t key);				\
+type *map##_search(struct map *m, size_t key);				\
 									\
 void map##_init(struct map *m, void *mem, int size)			\
 {									\
+	size_t i;							\
 	m->buckets = mem;						\
 	m->size = size / sizeof(struct map##_bucket);			\
 	m->pop = 0;							\
 	m->max_dist = 0;						\
-	for (int i = 0; i < m->size; i++)				\
+	for (i = 0; i < m->size; i++)					\
 		m->buckets[i].key = UNUSED;				\
 }									\
 									\
 void map##_clear(struct map *m, void (*dtor)(type))			\
 {									\
-	for (int i = 0; i < m->size; i++) {				\
+	size_t i;							\
+	for (i = 0; i < m->size; i++) {					\
 		struct map##_bucket *b = &m->buckets[i];		\
 		if (b->key == UNUSED || b->key == TOMBSTONE)		\
 			continue;					\
@@ -49,11 +47,11 @@ void map##_clear(struct map *m, void (*dtor)(type))			\
 	m->max_dist = 0;						\
 }									\
 									\
-static struct map##_bucket *map##_index(struct map *m, RHMAP_KEY key)	\
+static struct map##_bucket *map##_index(struct map *m, size_t key)	\
 {									\
-	int i = key % m->size;						\
-	int d = m->max_dist+1;						\
-	while (d-- >= 0 && m->buckets[i].key != UNUSED) {		\
+	size_t i = key % m->size;					\
+	size_t d = m->max_dist+1;					\
+	while (d --> 0 && m->buckets[i].key != UNUSED) {		\
 		if (m->buckets[i].key == key)				\
 			return &m->buckets[i];				\
 		i = (i+1) % m->size;					\
@@ -61,9 +59,9 @@ static struct map##_bucket *map##_index(struct map *m, RHMAP_KEY key)	\
 	return NULL;							\
 }									\
 									\
-type *map##_insert(struct map *m, RHMAP_KEY key, type val)		\
+type *map##_insert(struct map *m, size_t key, type val)			\
 {									\
-	int i = key % m->size;						\
+	size_t i = key % m->size;					\
 	struct map##_bucket ins;					\
 	if (m->pop+1 > m->size)						\
 		return NULL;						\
@@ -75,21 +73,21 @@ type *map##_insert(struct map *m, RHMAP_KEY key, type val)		\
 			struct map##_bucket tmp;			\
 			if (m->buckets[i].key == TOMBSTONE)		\
 				break;					\
-			if (ins.dist > m->max_dist)			\
-				m->max_dist = ins.dist+1;		\
 			tmp = ins;					\
 			ins = m->buckets[i];				\
 			m->buckets[i] = tmp;				\
 		}							\
 		i = (i+1) % m->size;					\
 		ins.dist++;						\
+			if (ins.dist > m->max_dist)			\
+				m->max_dist = ins.dist;			\
 	}								\
 	m->buckets[i] = ins;						\
 	m->pop++;							\
 	return &m->buckets[i].val;					\
 }									\
 									\
-type *map##_remove(struct map *m, RHMAP_KEY key)			\
+type *map##_remove(struct map *m, size_t key)				\
 {									\
 	struct map##_bucket *b = map##_index(m, key);			\
 	if (b != NULL) {						\
@@ -100,7 +98,7 @@ type *map##_remove(struct map *m, RHMAP_KEY key)			\
 	return NULL;							\
 }									\
 									\
-type *map##_search(struct map *m, RHMAP_KEY key)			\
+type *map##_search(struct map *m, size_t key)				\
 {									\
 	struct map##_bucket *b = map##_index(m, key);			\
 	if (b != NULL)							\

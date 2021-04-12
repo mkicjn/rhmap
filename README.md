@@ -10,8 +10,8 @@ Its primary focus is on flexibility, which is evident in several aspects of its 
   * The user is not stuck with dynamic memory, and can stick to statically allocated memory on embedded platforms.
 * A hash function is intentionally left unprovided.
   * The user is not stuck with string hashing, and can perform lookups by any data type with whatever hash function they want.
-* ***(SOON)*** It is compatible with ANSI C.
-  * The user is not stuck relying on modern features like `typeof`, and can use older standards on more limited platforms.
+* It is compatible with ANSI C, and C89.
+  * The user is not stuck relying on modern compiler features like `typeof`, and can use older standards on more limited platforms.
 
 It is also very simple to use, with consistent functions and data types which are essentially opaque.
 
@@ -48,6 +48,5 @@ The included test files demonstrate different uses of the hash table.
 
 ## To-do List
 
-* ANSI C compatbility
 * Resize function
 * Benchmark

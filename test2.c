@@ -13,7 +13,8 @@ DECLARE_RHMAP(phonebook, struct entry *)
 struct entry *new_entry(char *name, long number)
 {
 	struct entry *e = malloc(sizeof(*e));
-	e->name = strdup(name);
+	e->name = malloc(strlen(name)-1);
+	strcpy(e->name, name);
 	e->number = number;
 	return e;
 }
@@ -24,9 +25,9 @@ void destroy_entry(struct entry *e)
 	free(e);
 }
 
-unsigned long long djb2(const char *str, size_t n)
+size_t djb2(const char *str, size_t n)
 {
-	unsigned long long k = 5381;
+	size_t k = 5381;
 	while (n --> 0)
 		k = (k << 5) + k + *str++;
 	return k;
