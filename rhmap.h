@@ -6,30 +6,27 @@ enum {RHMAP_EMPTY, RHMAP_TOMB};
 #define DECLARE_RHMAP(map, type)					\
 struct map {								\
 	struct map##_bucket {						\
-		size_t key;						\
-		size_t dist;						\
+		size_t key, dist;					\
 		type val;						\
 	} *buckets;							\
-	size_t size;							\
-	size_t pop;							\
-	size_t max_dist;						\
+	size_t pop, cap, max_dist;					\
 };									\
 									\
 void map##_init(struct map *m, void *mem, int size)			\
 {									\
 	size_t i;							\
 	m->buckets = mem;						\
-	m->size = size / sizeof(struct map##_bucket);			\
+	m->cap = size / sizeof(struct map##_bucket);			\
 	m->pop = 0;							\
 	m->max_dist = 0;						\
-	for (i = 0; i < m->size; i++)					\
+	for (i = 0; i < m->cap; i++)					\
 		m->buckets[i].key = RHMAP_EMPTY;			\
 }									\
 									\
 void map##_clear(struct map *m, void (*dtor)(type))			\
 {									\
 	size_t i;							\
-	for (i = 0; i < m->size; i++) {					\
+	for (i = 0; i < m->cap; i++) {					\
 		struct map##_bucket *b = &m->buckets[i];		\
 		if (b->key == RHMAP_EMPTY || b->key == RHMAP_TOMB)	\
 			continue;					\
@@ -43,21 +40,21 @@ void map##_clear(struct map *m, void (*dtor)(type))			\
 									\
 static struct map##_bucket *map##_index(struct map *m, size_t key)	\
 {									\
-	size_t i = key % m->size;					\
+	size_t i = key % m->cap;					\
 	size_t d = m->max_dist+1;					\
 	while (d --> 0 && m->buckets[i].key != RHMAP_EMPTY) {		\
 		if (m->buckets[i].key == key)				\
 			return &m->buckets[i];				\
-		i = (i+1) % m->size;					\
+		i = (i+1) % m->cap;					\
 	}								\
 	return NULL;							\
 }									\
 									\
 type *map##_insert(struct map *m, size_t key, type val)			\
 {									\
-	size_t i = key % m->size;					\
+	size_t i = key % m->cap;					\
 	struct map##_bucket ins;					\
-	if (m->pop+1 > m->size)						\
+	if (m->pop+1 > m->cap)						\
 		return NULL;						\
 	ins.key = key;							\
 	ins.val = val;							\
@@ -71,7 +68,7 @@ type *map##_insert(struct map *m, size_t key, type val)			\
 			ins = m->buckets[i];				\
 			m->buckets[i] = tmp;				\
 		}							\
-		i = (i+1) % m->size;					\
+		i = (i+1) % m->cap;					\
 		ins.dist++;						\
 		if (ins.dist > m->max_dist)				\
 			m->max_dist = ins.dist;				\

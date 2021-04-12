@@ -6,19 +6,18 @@
 
 DECLARE_RHMAP(map, int)
 
-size_t djb2(const char *str, size_t n)
+size_t hash(const char *str, size_t n)
 {
-	size_t k = 5381;
+	size_t k = 0;
 	while (n --> 0)
-		k = (k << 5) + k + *str++;
+		k = k * k + *str++;
 	return k;
 }
-
 
 void map_print(struct map *m)
 {
 	size_t i;
-	for (i = 0; i < m->size; i++) {
+	for (i = 0; i < m->cap; i++) {
 		struct map_bucket *b = &m->buckets[i];
 		printf("%lu: ", i);
 		printf("[Key: %lu, ", b->key);
@@ -29,7 +28,7 @@ void map_print(struct map *m)
 
 void test_search(struct map *m, const char *s, int i)
 {
-	int *res = map_search(m, djb2(s, strlen(s)));
+	int *res = map_search(m, hash(s, strlen(s)));
 	printf("Lookup %s: ", s);
 	if (res != NULL) {
 		printf("%d", *res);
@@ -40,12 +39,14 @@ void test_search(struct map *m, const char *s, int i)
 	putchar('\n');
 }
 
+
+
 int main()
 {
 	struct map_bucket map_mem[26];
 	struct map m;
 	map_init(&m, map_mem, sizeof(map_mem));
-#define INS(x,y) map_insert(&m, djb2(x, sizeof(x)-1), y)
+#define INS(x,y) map_insert(&m, hash(x, sizeof(x)-1), y)
 	INS("Alfa", 1);
 	INS("Bravo", 2);
 	INS("Charlie", 3);

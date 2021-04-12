@@ -8,18 +8,28 @@ DECLARE_RHMAP(map, char *)
 
 /*
  * I was experimenting with hash functions and found this.
- * It seems weirdly good, based on my testing.
- * No collisions on 479k English words.
- * No collisions on numeric strings 0-99999
+ * It seems weirdly good, based on my testing:
+ * No collisions on 479k English words
+ * No collisions on numeric strings 0-499999
  *
- * TODO: Test further. There must be reason people don't use this.
+ * TODO: Test further. There must be a reason nobody uses this.
+ * If there are issues, maybe a better seed value would help.
  */
 size_t hash(const char *str, size_t n)
 {
-	size_t k = 0;
+	// mine
+	size_t k = 52711;
 	while (n --> 0)
 		k = k * k + *str++;
 	return k;
+	/*
+	// djb2
+	size_t k = 5381;
+	int c;
+	while ((c = *str++))
+		k = ((k << 5) + k) + c;
+	return k;
+	*/
 }
 
 size_t hash_str(char *s)
@@ -32,6 +42,19 @@ void chomp(char *s)
 	char *nl = strchr(s, '\n');
 	if (nl != NULL)
 		*nl = '\0';
+}
+
+size_t avg_dist(struct map *m)
+{
+	size_t i, dist = 0, n = 0;
+	for (i = 0; i < m->cap; i++) {
+		struct map_bucket *b = &m->buckets[i];
+		if (b->key == RHMAP_EMPTY || b->key == RHMAP_TOMB)
+			continue;
+		dist += m->buckets[i].dist;
+		n++;
+	}
+	return dist/n;
 }
 
 static struct map_bucket map_mem[500000];
@@ -58,6 +81,7 @@ int main()
 		}
 	}
 	printf("Max distance: %ld\n", m.max_dist);
+	printf("Average distance: %ld\n", avg_dist(&m));
 	map_clear(&m, (void (*)(char *))free);
 	return 0;
 }
