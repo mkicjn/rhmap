@@ -58,7 +58,6 @@ int main()
 				puts("Failure");
 		} else if (sscanf(buf, "get %s", name) >= 1) {
 			struct entry **e = phonebook_search(book, djb2(name, strlen(name)));
-			printf("%ld\n", djb2(name, strlen(name)));
 			if (e != NULL)
 				printf("%s: %ld\n", (*e)->name, (*e)->number);
 			else
