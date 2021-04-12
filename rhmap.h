@@ -15,12 +15,6 @@ struct map {								\
 	size_t max_dist;						\
 };									\
 									\
-void map##_init(struct map *m, void *mem, int size);			\
-void map##_clear(struct map *m, void (*dtor)(type));			\
-type *map##_insert(struct map *m, size_t key, type val);		\
-type *map##_remove(struct map *m, size_t key);				\
-type *map##_search(struct map *m, size_t key);				\
-									\
 void map##_init(struct map *m, void *mem, int size)			\
 {									\
 	size_t i;							\
@@ -79,8 +73,8 @@ type *map##_insert(struct map *m, size_t key, type val)			\
 		}							\
 		i = (i+1) % m->size;					\
 		ins.dist++;						\
-			if (ins.dist > m->max_dist)			\
-				m->max_dist = ins.dist;			\
+		if (ins.dist > m->max_dist)				\
+			m->max_dist = ins.dist;				\
 	}								\
 	m->buckets[i] = ins;						\
 	m->pop++;							\

@@ -1,6 +1,6 @@
 # RHMap
 
-RHMap is a one file C implementation of a generic hash table using robin hood hashing.
+RHMap is a single header only generic hash table with robin hood hashing, in just 100 lines of C.
 
 Its primary focus is on flexibility, which is evident in several aspects of its design:
 
