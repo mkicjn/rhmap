@@ -13,7 +13,7 @@ DECLARE_RHMAP(phonebook, struct entry *)
 struct entry *new_entry(char *name, long number)
 {
 	struct entry *e = malloc(sizeof(*e));
-	e->name = malloc(strlen(name)-1);
+	e->name = malloc(strlen(name));
 	strcpy(e->name, name);
 	e->number = number;
 	return e;
@@ -52,18 +52,19 @@ int main()
 		if (fgets(buf, sizeof(buf), stdin) == NULL)
 			break;
 		if (sscanf(buf, "set %s %ld", name, &num) >= 2) {
-			if (phonebook_insert(book, djb2(name, strlen(name)-1), new_entry(name, num)) != NULL)
+			if (phonebook_insert(book, djb2(name, strlen(name)), new_entry(name, num)) != NULL)
 				puts("Success");
 			else
 				puts("Failure");
 		} else if (sscanf(buf, "get %s", name) >= 1) {
-			struct entry **e = phonebook_search(book, djb2(name, strlen(name)-1));
+			struct entry **e = phonebook_search(book, djb2(name, strlen(name)));
+			printf("%ld\n", djb2(name, strlen(name)));
 			if (e != NULL)
 				printf("%s: %ld\n", (*e)->name, (*e)->number);
 			else
 				puts("Not found");
 		} else if (sscanf(buf, "del %s", name) >= 1) {
-			struct entry **e = phonebook_remove(book, djb2(name, strlen(name)-1));
+			struct entry **e = phonebook_remove(book, djb2(name, strlen(name)));
 			if (e != NULL) {
 				destroy_entry(*e);
 				puts("Success");

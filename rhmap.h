@@ -1,7 +1,7 @@
 #ifndef RHMAP_H
 #define RHMAP_H
 
-enum {UNUSED, TOMBSTONE};
+enum {RHMAP_EMPTY, RHMAP_TOMB};
 
 #define DECLARE_RHMAP(map, type)					\
 struct map {								\
@@ -23,7 +23,7 @@ void map##_init(struct map *m, void *mem, int size)			\
 	m->pop = 0;							\
 	m->max_dist = 0;						\
 	for (i = 0; i < m->size; i++)					\
-		m->buckets[i].key = UNUSED;				\
+		m->buckets[i].key = RHMAP_EMPTY;			\
 }									\
 									\
 void map##_clear(struct map *m, void (*dtor)(type))			\
@@ -31,11 +31,11 @@ void map##_clear(struct map *m, void (*dtor)(type))			\
 	size_t i;							\
 	for (i = 0; i < m->size; i++) {					\
 		struct map##_bucket *b = &m->buckets[i];		\
-		if (b->key == UNUSED || b->key == TOMBSTONE)		\
+		if (b->key == RHMAP_EMPTY || b->key == RHMAP_TOMB)	\
 			continue;					\
 		if (dtor != NULL)					\
 			dtor(b->val);					\
-		b->key = UNUSED;					\
+		b->key = RHMAP_EMPTY;					\
 	}								\
 	m->pop = 0;							\
 	m->max_dist = 0;						\
@@ -45,7 +45,7 @@ static struct map##_bucket *map##_index(struct map *m, size_t key)	\
 {									\
 	size_t i = key % m->size;					\
 	size_t d = m->max_dist+1;					\
-	while (d --> 0 && m->buckets[i].key != UNUSED) {		\
+	while (d --> 0 && m->buckets[i].key != RHMAP_EMPTY) {		\
 		if (m->buckets[i].key == key)				\
 			return &m->buckets[i];				\
 		i = (i+1) % m->size;					\
@@ -62,10 +62,10 @@ type *map##_insert(struct map *m, size_t key, type val)			\
 	ins.key = key;							\
 	ins.val = val;							\
 	ins.dist = 0;							\
-	while (m->buckets[i].key != UNUSED) {				\
+	while (m->buckets[i].key != RHMAP_EMPTY) {			\
 		if (m->buckets[i].dist < ins.dist) {			\
 			struct map##_bucket tmp;			\
-			if (m->buckets[i].key == TOMBSTONE)		\
+			if (m->buckets[i].key == RHMAP_TOMB)		\
 				break;					\
 			tmp = ins;					\
 			ins = m->buckets[i];				\
@@ -85,7 +85,7 @@ type *map##_remove(struct map *m, size_t key)				\
 {									\
 	struct map##_bucket *b = map##_index(m, key);			\
 	if (b != NULL) {						\
-		b->key = TOMBSTONE;					\
+		b->key = RHMAP_TOMB;					\
 		m->pop--;						\
 		return &b->val;						\
 	}								\
