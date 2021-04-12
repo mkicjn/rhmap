@@ -46,8 +46,9 @@ int main()
 		char **str_ptr;
 		chomp(buf);
 		str_ptr = map_search(&m, hash_str(buf));
-		if (str_ptr != NULL && strcmp(buf, *str_ptr) != 0) {
-			printf("Collision: \"%s\" and \"%s\"\n", buf, *str_ptr);
+		if (str_ptr != NULL) {
+			if (strcmp(buf, *str_ptr) != 0)
+				printf("Collision: \"%s\" and \"%s\"\n", buf, *str_ptr);
 			continue;
 		}
 		str_ptr = map_insert(&m, hash_str(buf), strdup(buf));
