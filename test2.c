@@ -52,10 +52,16 @@ int main()
 		if (fgets(buf, sizeof(buf), stdin) == NULL)
 			break;
 		if (sscanf(buf, "set %s %ld", name, &num) >= 2) {
-			if (phonebook_insert(book, djb2(name, strlen(name)), new_entry(name, num)) != NULL)
-				puts("Success");
-			else
-				puts("Failure");
+			unsigned long h = djb2(name, strlen(name));
+			struct entry **e = phonebook_search(book, h);
+			if (e != NULL) {
+				(*e)->number = num;
+				puts("Changed");
+			} else if (phonebook_insert(book, h, new_entry(name, num)) != NULL) {
+				puts("Inserted");
+			} else {
+				puts("Failed");
+			}
 		} else if (sscanf(buf, "get %s", name) >= 1) {
 			struct entry **e = phonebook_search(book, djb2(name, strlen(name)));
 			if (e != NULL)
@@ -66,7 +72,7 @@ int main()
 			struct entry **e = phonebook_remove(book, djb2(name, strlen(name)));
 			if (e != NULL) {
 				destroy_entry(*e);
-				puts("Success");
+				puts("Deleted");
 			} else {
 				puts("Not found");
 			}
