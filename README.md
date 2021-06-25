@@ -9,7 +9,7 @@ Its primary focus is on flexibility, which is evident in several aspects of its 
 * All memory is to be provided and managed by the caller.
   * The user is not stuck with dynamic memory, and can stick to statically allocated memory on embedded platforms.
 * A hash function is intentionally left unprovided.
-  * The user is not stuck with string hashing, and can perform lookups by any data type by using whatever hash function they want.
+  * The user is not stuck with string hashing, and can perform lookups with any data type by using whatever hash function they want.
 * It is compatible with ANSI C, i.e. C89.
   * The user is not stuck relying on modern compiler features like `typeof`, and can use older standards on more limited platforms.
 * A function for rehashing tables is provided, but never used automatically.
@@ -46,21 +46,26 @@ Take care to manipulate the structure only by using the provided functions:
     type *name##_remove(struct name *m, size_t key);
     void *name##_rehash(struct name *m, void *mem, size_t cap);
 
-The *init* function initializes the struct's members.
+---
+
+* The *init* function initializes the struct's members.
 The `size` argument is in bytes so that the usage of `sizeof` on static arrays is appropriate.
 
-The *clear* function empties the table.
+* The *clear* function empties the table.
 To simplify cleanup, it takes a function pointer to a destructor, which (if not `NULL`) will be called on every value in the table.
 
-The self-explanatory *insert,* *search,* and *remove* functions return a pointer to the value's location in memory, or `NULL` on error.
+* The self-explanatory *insert,* *search,* and *remove* functions return a pointer to the value's location in memory, or `NULL` on error.
 
-They return a pointer to the value instead of the value itself for two reasons:
+* The *rehash* function reinitializes the table to a new memory area, and re-inserts all previous entries.
+It returns a pointer to the old memory area, or `NULL` on error.
+
+---
+
+Functions return a pointer to the value instead of the value itself for two reasons:
 1. This approach avoids the need for separate *get* and *set* functions, and remove doesn't need to manage entry memory.
 2. There is a consistent way to signal errors, i.e. differentiate between `NULL` as an error and `NULL` as a value.
-However, there is one limitation: pointers returned by these functions should *not* be used after any insertions, because insertions may reorder table contents.
 
-The *rehash* function reinitializes the table to a new memory area, and re-inserts all previous entries.
-It returns a pointer to the old memory area, or `NULL` on error.
+However, there is one limitation: pointers returned by these functions should *not* be used after any insertions, because insertions may reorder table contents.
 
 ## Examples
 
