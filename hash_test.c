@@ -47,11 +47,11 @@ void chomp(char *s)
 size_t avg_dist(struct map *m)
 {
 	size_t i, dist = 0, n = 0;
-	for (i = 0; i < m->cap; i++) {
+	for (i = 0; i < m->capacity; i++) {
 		struct map_bucket *b = &m->buckets[i];
 		if (b->key == RHMAP_EMPTY || b->key == RHMAP_TOMB)
 			continue;
-		dist += m->buckets[i].dist;
+		dist += m->buckets[i].distance;
 		n++;
 	}
 	return dist/n;
@@ -80,7 +80,7 @@ int main()
 			break;
 		}
 	}
-	printf("Max distance: %ld\n", m.max_dist);
+	printf("Max distance: %ld\n", m.max_distance);
 	printf("Average distance: %ld\n", avg_dist(&m));
 	map_clear(&m, (void (*)(char *))free);
 	return 0;
