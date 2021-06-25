@@ -6,60 +6,60 @@ enum {RHMAP_EMPTY, RHMAP_TOMB};
 #define DECLARE_RHMAP(map, type)					\
 struct map {								\
 	struct map##_bucket {						\
-		size_t key, dist;					\
-		type val;						\
+		size_t key, distance;					\
+		type value;						\
 	} *buckets;							\
-	size_t pop, cap, max_dist;					\
+	size_t population, capacity, max_distance;			\
 };									\
 									\
 void map##_init(struct map *m, void *mem, size_t size)			\
 {									\
 	size_t i;							\
 	m->buckets = mem;						\
-	m->cap = size / sizeof(struct map##_bucket);			\
-	m->pop = 0;							\
-	m->max_dist = 0;						\
-	for (i = 0; i < m->cap; i++)					\
+	m->capacity = size / sizeof(struct map##_bucket);		\
+	m->population = 0;						\
+	m->max_distance = 0;						\
+	for (i = 0; i < m->capacity; i++)				\
 		m->buckets[i].key = RHMAP_EMPTY;			\
 }									\
 									\
 void map##_clear(struct map *m, void (*dtor)(type))			\
 {									\
 	size_t i;							\
-	for (i = 0; i < m->cap; i++) {					\
+	for (i = 0; i < m->capacity; i++) {				\
 		struct map##_bucket *b = &m->buckets[i];		\
 		if (b->key == RHMAP_EMPTY || b->key == RHMAP_TOMB)	\
 			continue;					\
 		if (dtor != NULL)					\
-			dtor(b->val);					\
+			dtor(b->value);					\
 		b->key = RHMAP_EMPTY;					\
 	}								\
-	m->pop = 0;							\
-	m->max_dist = 0;						\
+	m->population = 0;						\
+	m->max_distance = 0;						\
 }									\
 									\
 static struct map##_bucket *map##_index(struct map *m, size_t key)	\
 {									\
-	size_t i = key % m->cap, d = m->max_dist+1;			\
+	size_t i = key % m->capacity, d = m->max_distance+1;		\
 	while (d --> 0 && m->buckets[i].key != RHMAP_EMPTY) {		\
 		if (m->buckets[i].key == key)				\
 			return &m->buckets[i];				\
-		i = (i+1) % m->cap;					\
+		i = (i+1) % m->capacity;				\
 	}								\
 	return NULL;							\
 }									\
 									\
 type *map##_insert(struct map *m, size_t key, type val)			\
 {									\
-	size_t i = key % m->cap;					\
+	size_t i = key % m->capacity;					\
 	struct map##_bucket ins;					\
-	if (m->pop+1 > m->cap)						\
+	if (m->population+1 > m->capacity)				\
 		return NULL;						\
 	ins.key = key;							\
-	ins.val = val;							\
-	ins.dist = 0;							\
+	ins.value = val;						\
+	ins.distance = 0;						\
 	while (m->buckets[i].key != RHMAP_EMPTY) {			\
-		if (m->buckets[i].dist < ins.dist) {			\
+		if (m->buckets[i].distance < ins.distance) {		\
 			struct map##_bucket tmp;			\
 			if (m->buckets[i].key == RHMAP_TOMB)		\
 				break;					\
@@ -67,20 +67,20 @@ type *map##_insert(struct map *m, size_t key, type val)			\
 			ins = m->buckets[i];				\
 			m->buckets[i] = tmp;				\
 		}							\
-		i = (i+1) % m->cap;					\
-		ins.dist++;						\
-		if (ins.dist > m->max_dist)				\
-			m->max_dist = ins.dist;				\
+		i = (i+1) % m->capacity;				\
+		ins.distance++;						\
+		if (ins.distance > m->max_distance)			\
+			m->max_distance = ins.distance;			\
 	}								\
 	m->buckets[i] = ins;						\
-	m->pop++;							\
-	return &m->buckets[i].val;					\
+	m->population++;						\
+	return &m->buckets[i].value;					\
 }									\
 									\
 type *map##_search(struct map *m, size_t key)				\
 {									\
 	struct map##_bucket *b = map##_index(m, key);			\
-	return b ? &b->val : NULL;					\
+	return b ? &b->value : NULL;					\
 }									\
 									\
 type *map##_remove(struct map *m, size_t key)				\
@@ -89,30 +89,22 @@ type *map##_remove(struct map *m, size_t key)				\
 	if (b != NULL)							\
 		return NULL;						\
 	b->key = RHMAP_TOMB;						\
-	m->pop--;							\
-	return &b->val;							\
-}									\
-									\
-static size_t map##_population(struct map *m) {return m->pop;}		\
-static size_t map##_capacity(struct map *m) {return m->cap;}		\
-									\
-static double map##_load_factor(struct map *m)				\
-{									\
-	return (double)m->pop/m->cap;					\
+	m->population--;						\
+	return &b->value;						\
 }									\
 									\
 void *map##_rehash(struct map *m, void *mem, size_t cap)		\
 {									\
-	size_t i, cap_old = m->cap;					\
+	size_t i, cap_old = m->capacity;				\
 	struct map##_bucket *mem_old = m->buckets;			\
-	if (m->pop > cap)						\
+	if (m->population > cap)					\
 		return NULL;						\
 	map##_init(m, mem, cap);					\
 	for (i = 0; i < cap_old; i++) {					\
 		size_t key = mem_old[i].key;				\
 		if (key == RHMAP_EMPTY || key == RHMAP_TOMB)		\
 			continue;					\
-		map##_insert(m, key, mem_old[i].val);			\
+		map##_insert(m, key, mem_old[i].value);			\
 	}								\
 	return mem_old;							\
 }

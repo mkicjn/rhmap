@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #include "rhmap.h"
+
+typedef enum {false, true} bool; /* C89 compat */
 
 struct entry {
 	char *name;
@@ -47,9 +48,9 @@ bool maybe_resize(struct phonebook *p)
 {
 	size_t s;
 	struct phonebook_bucket *b;
-	if (phonebook_load_factor(p) < LOAD_THRESHOLD)
+	if ((double)p->population/p->capacity < LOAD_THRESHOLD)
 		return false;
-	s = sizeof(*b) * phonebook_capacity(p) * 2;
+	s = sizeof(*b) * p->capacity * 2;
 	b = malloc(s);
 	free(phonebook_rehash(p, b, s));
 	return true;
@@ -89,7 +90,7 @@ int main()
 				puts("Failed");
 			}
 			if (maybe_resize(book))
-				printf("Resized to %lu\n", phonebook_capacity(book));
+				printf("Resized to %lu\n", book->capacity);
 		} else if (sscanf(buf, "get %s", name) >= 1) {
 			struct entry **e = phonebook_search(book, djb2(name, strlen(name)));
 			if (e != NULL)

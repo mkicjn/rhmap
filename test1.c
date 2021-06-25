@@ -17,12 +17,12 @@ size_t hash(const char *str, size_t n)
 void map_print(struct map *m)
 {
 	size_t i;
-	for (i = 0; i < m->cap; i++) {
+	for (i = 0; i < m->capacity; i++) {
 		struct map_bucket *b = &m->buckets[i];
 		printf("%lu: ", i);
 		printf("[Key: %lu, ", b->key);
-		printf("Val: %d, ", b->val);
-		printf("Dist: %lu]\n", b->dist);
+		printf("Val: %d, ", b->value);
+		printf("Dist: %lu]\n", b->distance);
 	}
 }
 
