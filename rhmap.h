@@ -86,7 +86,7 @@ type *map##_search(struct map *m, size_t key)				\
 type *map##_remove(struct map *m, size_t key)				\
 {									\
 	struct map##_bucket *b = map##_index(m, key);			\
-	if (b != NULL)							\
+	if (b == NULL)							\
 		return NULL;						\
 	b->key = RHMAP_TOMB;						\
 	m->population--;						\
