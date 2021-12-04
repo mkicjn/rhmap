@@ -1,9 +1,11 @@
 #ifndef RHMAP_H
 #define RHMAP_H
+#include <stddef.h>
 
 enum {RHMAP_EMPTY, RHMAP_TOMB};
 
-#define DECLARE_RHMAP(map, type)					\
+#define RHMAP_DECLARE(map, type)					\
+									\
 struct map {								\
 	struct map##_bucket {						\
 		size_t key, distance;					\
@@ -93,13 +95,13 @@ type *map##_remove(struct map *m, size_t key)				\
 	return &b->value;						\
 }									\
 									\
-void *map##_rehash(struct map *m, void *mem, size_t cap)		\
+void *map##_rehash(struct map *m, void *mem, size_t size)		\
 {									\
 	size_t i, cap_old = m->capacity;				\
 	struct map##_bucket *mem_old = m->buckets;			\
-	if (m->population > cap)					\
+	if (m->population > size / sizeof(struct map##_bucket))		\
 		return NULL;						\
-	map##_init(m, mem, cap);					\
+	map##_init(m, mem, size);					\
 	for (i = 0; i < cap_old; i++) {					\
 		size_t key = mem_old[i].key;				\
 		if (key == RHMAP_EMPTY || key == RHMAP_TOMB)		\

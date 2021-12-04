@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "rhmap.h"
 
-DECLARE_RHMAP(map, char *)
+RHMAP_DECLARE(map, char *)
 
 /*
  * I was experimenting with hash functions and found this.

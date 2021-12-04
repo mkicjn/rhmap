@@ -25,7 +25,7 @@ void destroy_entry(struct entry *e)
 	free(e);
 }
 
-DECLARE_RHMAP(phonebook, struct entry *)
+RHMAP_DECLARE(phonebook, struct entry *)
 
 #define INIT_SIZE 64
 struct phonebook *create_phonebook(void)

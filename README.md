@@ -22,7 +22,7 @@ In fact, this whole project is inspired by [this excellent article on Robin Hood
 
 ## Usage
 
-To set up, simply `#include "rhmap.h"` and declare the table's type with `DECLARE_RHMAP(name, type)`.
+To set up, simply `#include "rhmap.h"` and declare the table's type with `RHMAP_DECLARE(name, type)`.
 
 `struct name` will be defined as follows to represent the hash table:
 
@@ -39,12 +39,12 @@ Unfortunately, ANSI C provides no clean way to enforce this.
 
 Take care to manipulate the structure only by using the provided functions:
 
-    void name##_init(struct name *m, void *mem, size_t cap);
+    void name##_init(struct name *m, void *mem, size_t size);
     void name##_clear(struct name *m, void (*dtor)(type));
     type *name##_insert(struct name *m, size_t key, type val);
     type *name##_search(struct name *m, size_t key);
     type *name##_remove(struct name *m, size_t key);
-    void *name##_rehash(struct name *m, void *mem, size_t cap);
+    void *name##_rehash(struct name *m, void *mem, size_t size);
 
 ---
 

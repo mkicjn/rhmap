@@ -4,7 +4,7 @@
 
 #include "rhmap.h"
 
-DECLARE_RHMAP(map, int)
+RHMAP_DECLARE(map, int)
 
 size_t hash(const char *str, size_t n)
 {
