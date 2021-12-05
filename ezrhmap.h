@@ -5,26 +5,6 @@
 #include <stdlib.h>
 #include "rhmap.h"
 
-/*
- *	Where the main header aims to maximize flexibility, this header aims to maximize convenience.
- *	Thus, this header makes some assumptions, but greatly simplifies casual use.
- *
- *	It does remain generic, meaning you will still need to supply a hash function and destructor.
- *	However, everything else is managed automatically!
- *
- *	The following functions are provided in addition to the usual:
- *
- *		struct map *map_create(void);
- *		void map_destroy(struct map *m);
- *
- *		val *map_set(struct map *m, key k, val v);
- *		val *map_get(struct map *m, key k);
- *		val *map_del(struct map *m, key k);
- *
- *	TODO: Integrate this info into the README somehow.
- */
-
-
 #ifndef EZRHMAP_MAX_LOAD
 #define EZRHMAP_MAX_LOAD 0.9
 #endif
