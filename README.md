@@ -1,28 +1,34 @@
 # RHMap
 
-RHMap is a full-featured, single-header-only, generic hash table with Robin Hood hashing, in only 112 lines of ANSI C.
+RHMap is a full-featured, single-header-only, generic hash table with Robin Hood hashing. All in a little bit of ANSI C.
 
-Its primary focus is on flexibility, which is evident in several aspects of its design:
+It comes in two flavors: the [original flexibility-oriented interface](#original_usage) and the [new simplified interface](#simplified_usage).
+
+The primary design goal of this project is flexibility, which is evident in several aspects of the original interface design:
 
 * The data type of the hash table's values is not prescribed.
-  * The user is not stuck with the ugly `void *`, or with the limited solution of doing `#define VAL_TYPE whatever` before the `#include`.
-* All memory is to be provided and managed by the caller.
-  * The user is not stuck with dynamic memory, and can stick to statically allocated memory on embedded platforms.
+  * The user is not stuck with the ugly `void *`, or with the hack solution of placing `#define VAL_TYPE whatever` before the `#include`.
+* All memory in use by the table can be provided and managed manually.
+  * The user is not stuck with dynamic memory, and can easily use statically allocated memory on embedded platforms, or even utilize multiple strategies *in the same codebase*.
 * A hash function is intentionally left unprovided.
   * The user is not stuck with string hashing, and can perform lookups with any data type by using whatever hash function they want.
 * It is compatible with ANSI C, i.e. C89.
   * The user is not stuck relying on modern compiler features like `typeof`, and can use older standards on more limited platforms.
-* A function for rehashing tables is provided, but never used automatically.
-  * The user is not stuck with the scheme the library author likes best, and can resize their hash tables up or down with arbitrary criteria.
+* A function for rehashing tables is provided, but not used automatically (except by the simplified interface).
+  * The user is not stuck with the scheme the library author likes best, and can resize their hash tables how and when they want.
 
-It is also very simple to use, because it is designed to have consistent usage semantics and a descriptive naming convention.
+Ease of Use may be considered the secondary design goal:
+
+* The library is designed to have consistent usage semantics and a descriptive naming convention.
+* A cleanup function is provided to aid in manual memory management using the original interface.
+* A simplified interface is provided for general use which automatically resizes the table and manages value memory.
 
 Furthermore, it should be rather efficient (in time and space) because Robin Hood hashing results in excellent worst case probe counts, even under high load.
 In fact, this whole project is inspired by [this excellent article on Robin Hood hashing](https://www.sebastiansylvan.com/post/robin-hood-hashing-should-be-your-default-hash-table-implementation/) which explains further.
 
-## Usage
+## <a name="original_usage"></a>Usage (Original Interface)
 
-To set up, simply `#include "rhmap.h"` and declare the table's type with `RHMAP_DECLARE(name, type)`.
+To set up, simply `#include "rhmap.h"` and declare the table's type using the macro `RHMAP_DECLARE(name, type)`.
 
 `struct name` will be defined as follows to represent the hash table:
 
@@ -67,11 +73,30 @@ Functions return a pointer to the value instead of the value itself for two reas
 
 However, there is one limitation: pointers returned by these functions should *not* be used after any insertions, because insertions may reorder table contents.
 
+## <a name="simplified_usage"></a>Usage (Simplified Interface)
+
+Where the main interface aims to maximize flexibility, this interface aims to maximize convenience. Thus, this adaptation makes some assumptions, but greatly simplifies casual use. To remain generic, you will still need to supply a hash function and destructor (albeit only once). Everything else is managed automatically, including table resizing and freeing value memory.
+
+To set up, simply `#include "ezrhmap.h"` and declare the table's type using the macro `EZRHMAP_DECLARE(name, hash_function, key_t, val_t, destructor)`.
+
+`hash_function` should be `size_t (*)(key_t)` and `destructor` should be `void (*)(val_t)` or `NULL`.
+
+The following functions are provided:
+
+    struct name *name##_create(void);
+    void name##_destroy(struct name *m);
+    val *name##_set(struct name *m, key_t k, val_t v);
+    val *name##_get(struct name *m, key_t k);
+    val *name##_del(struct name *m, key_t k);
+
+All of these functions should be self-explanatory. Note that pointers are returned, with `NULL` indicating an error (e.g. key not found). In practice, the return values for `name##_set` and `name##_del` can be ignored.
+
 ## Examples
 
 The included test files demonstrate different uses of the hash table.
 * `test1.c` demonstrates its use with constant size, static memory, and simple data types.
 * `test2.c` demonstrates its use with automatic resizing, dynamic memory, and complex data types.
+* `test2b.c` behaves similarly to `test2.c` but is meant to demonstrate the simplified interface.
 
 ## To-do List
 
