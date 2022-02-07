@@ -9,10 +9,6 @@
 #define EZRHMAP_MAX_LOAD 0.9
 #endif
 
-#ifndef EZRHMAP_GROWTH_FN
-#define EZRHMAP_GROWTH_FN(x) (x*2+1)
-#endif
-
 #define EZRHMAP_DECLARE(map, hash, key, val, dtor)			\
 									\
 RHMAP_DECLARE(map, val)							\
@@ -35,8 +31,8 @@ void map##_destroy(struct map *m)					\
 val *map##_set(struct map *m, key k, val v)				\
 {									\
 	size_t h = hash(k);						\
-	if (m->population >= EZRHMAP_MAX_LOAD * m->capacity) {		\
-		size_t new_cap = EZRHMAP_GROWTH_FN(m->capacity);	\
+	if (m->population >= m->capacity * EZRHMAP_MAX_LOAD) {		\
+		size_t new_cap = m->capacity * 2;			\
 		struct map##_bucket *b = malloc(new_cap * sizeof(*b));	\
 		free(map##_rehash(m, b, new_cap * sizeof(*b)));		\
 	}								\
@@ -59,6 +55,11 @@ val *map##_get(struct map *m, key k)					\
 val *map##_del(struct map *m, key k)					\
 {									\
 	val *v = map##_remove(m, hash(k));				\
+	if (m->population < m->capacity / 4) {				\
+		size_t new_cap = m->capacity / 2;			\
+		struct map##_bucket *b = malloc(new_cap * sizeof(*b));	\
+		free(map##_rehash(m, b, new_cap * sizeof(*b)));		\
+	}								\
 	if (v != NULL)							\
 		dtor(*v);						\
 	return v;							\
