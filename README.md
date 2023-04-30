@@ -97,7 +97,3 @@ The included test files demonstrate different uses of the hash table.
 * `test1.c` demonstrates its use with constant size, static memory, and simple data types.
 * `test2.c` demonstrates its use with automatic resizing, dynamic memory, and complex data types.
 * `test2b.c` behaves similarly to `test2.c` but is meant to demonstrate the simplified interface.
-
-## To-do List
-
-* Benchmark
